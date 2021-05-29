@@ -125,7 +125,7 @@ def process_channel(channel_id, server_id, import_id, key, before = None):
             data[-2] = '%s::jsonb[]' # mentions
             data[-1] = '%s::jsonb[]' # attachments
 
-            query = "INSERT INTO discord_posts ({fields}) VALUES ({values}) ON CONFLICT (id, server) DO UPDATE SET {updates}".format(
+            query = "INSERT INTO discord_posts ({fields}) VALUES ({values}) ON CONFLICT (id, server, channel) DO UPDATE SET {updates}".format(
                 fields = ','.join(columns),
                 values = ','.join(data),
                 updates = ','.join([f'{column}=EXCLUDED.{column}' for column in columns])
