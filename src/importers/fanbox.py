@@ -20,10 +20,11 @@ from ..internals.utils.proxy import get_proxy
 from ..internals.utils.download import download_file, DownloaderException
 from ..internals.utils.utils import get_import_id
 from ..internals.utils.logger import log
+from ..internals.utils.scrapper import create_scrapper_session
 
 def import_posts(import_id, key, url = 'https://api.fanbox.cc/post.listSupporting?limit=50'):
     try:
-        scraper = requests.get(
+        scraper = create_scrapper_session(useCloudscraper=False).get(
             url,
             cookies={ 'FANBOXSESSID': key },
             headers={ 'origin': 'https://fanbox.cc' },

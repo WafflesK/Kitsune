@@ -15,6 +15,7 @@ from ..importers import patreon
 from ..importers import fanbox
 from ..importers import subscribestar
 from ..importers import gumroad
+from ..importers import discord
 
 api = Blueprint('api', __name__)
 
@@ -24,6 +25,7 @@ def import_api():
     import_id = get_import_id(key)
     service = request.form.get('service')
     allowed_to_save_session = request.form.get('save_session_key', False)
+    channel_ids = request.form.get('channel_ids')
 
     if not key:
         return "", 401
@@ -45,6 +47,9 @@ def import_api():
     elif service == 'gumroad':
         target = gumroad.import_posts
         args = (key,)
+    elif service == 'discord':
+        target = discord.import_posts
+        args = (key, channel_ids)
 
     if target is not None and args is not None:
         logger.log(import_id, f'Starting import. Your import id is {import_id}.')

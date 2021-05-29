@@ -1,7 +1,6 @@
 import sys
 sys.setrecursionlimit(100000)
 
-import cloudscraper
 import datetime
 import dateutil
 import config
@@ -24,6 +23,7 @@ from ..lib.post import post_flagged, post_exists
 from ..internals.utils.download import download_file, DownloaderException
 from ..internals.utils.proxy import get_proxy
 from ..internals.utils.logger import log
+from ..internals.utils.scrapper import create_scrapper_session
 
 posts_url = 'https://www.patreon.com/api/posts' + '?include=' + ','.join([
     'user',
@@ -212,24 +212,6 @@ bills_url = 'https://www.patreon.com/api/bills' + '?timezone=UTC' + '&include=' 
     'needs_nsfw_auth'
 ]) + '&json-api-use-default-includes=false&json-api-version=1.0&filter[due_date_year]='
 
-def create_scrapper_session(
-    retries=3,
-    backoff_factor=0.3,
-    status_forcelist=(500, 502, 504)
-):
-    session = cloudscraper.create_scraper()
-    retry = Retry(
-        total=retries,
-        read=retries,
-        connect=retries,
-        backoff_factor=backoff_factor,
-        status_forcelist=status_forcelist,
-    )
-    adapter = HTTPAdapter(max_retries=retry)
-    session.mount('http://', adapter)
-    session.mount('https://', adapter)
-    return session
-
 #get ids of campaigns with active pledge
 def get_active_campaign_ids(key, import_id):
     try:
@@ -348,8 +330,8 @@ def import_campaign_page(url, key, import_id):
             attachments_directory = f"attachments/{user_id}/{post_id}"
 
             if is_artist_dnp('patreon', user_id):
-                log(import_id, f"Skipping post {post_id} from user {user_id} is in do not post list", to_client = True)
-                continue
+                log(import_id, f"Skipping user {user_id} because they are in do not post list", to_client = True)
+                return
 
             if not post['attributes']['current_user_can_view']:
                 log(import_id, f'Skipping {post_id} from user {user_id} because this post is not available for current subscription tier', to_client = True)

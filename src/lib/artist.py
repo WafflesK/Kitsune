@@ -86,6 +86,44 @@ def index_artists():
                     "service": "dlsite"
                 }
 
+            write_model_to_db(conn, cursor, model)
+        except Exception:
+            logging.exception(f"Error while indexing user {post['user']}")
+
+    cursor.close()
+    return_conn(conn)
+
+def index_discord_channel_server(channel_data, server_data):
+    conn = get_raw_conn()
+    cursor = conn.cursor()
+
+    cursor.execute('select * from "lookup" where id = %s AND service = %s', (server_data['id'], 'discord'))
+    results = cursor.fetchall()
+
+    if len(results) == 0:
+        model = {
+            "id": server_data['id'],
+            "name": server_data['name'],
+            "service": "discord"
+        }
+        write_model_to_db(conn, cursor, model)
+
+    cursor.execute('select * from "lookup" where id = %s AND service = %s', (channel_data['id'], 'discord-channel'))
+    results = cursor.fetchall()
+
+    if len(results) == 0:
+        model = {
+            "id": channel_data['id'],
+            "name": channel_data['name'],
+            "service": "discord-channel"
+        }
+        write_model_to_db(conn, cursor, model)       
+
+    cursor.close()
+    return_conn(conn)
+
+def write_model_to_db(conn, cursor, model):
+        try:
             columns = model.keys()
             values = ['%s'] * len(model.values())
             query = "INSERT INTO lookup ({fields}) VALUES ({values})".format(
@@ -95,7 +133,4 @@ def index_artists():
             cursor.execute(query, list(model.values()))
             conn.commit()
         except Exception:
-            logging.exception(f"Error while indexing user {post['user']}")
-
-    cursor.close()
-    return_conn(conn)
+            logging.exception(f"Error while indexing {model['id']}")

@@ -4,7 +4,6 @@ sys.setrecursionlimit(100000)
 import re
 import config
 import requests
-import cloudscraper
 import uuid
 import json
 import datetime
@@ -21,10 +20,11 @@ from ..internals.utils.download import download_file, DownloaderException
 from ..internals.utils.proxy import get_proxy
 from ..internals.utils.logger import log
 from ..internals.utils.utils import get_value
+from ..internals.utils.scrapper import create_scrapper_session
 
 def import_posts(import_id, key, offset = 1):
     try:
-        scraper = cloudscraper.create_scraper().get(
+        scraper = create_scrapper_session().get(
             f"https://gumroad.com/discover_search?from={offset}&user_purchases_only=true",
             cookies = { '_gumroad_app_session': key },
             proxies=get_proxy()
@@ -87,7 +87,7 @@ def import_posts(import_id, key, offset = 1):
             'attachments': []
         }
         
-        scraper2 = cloudscraper.create_scraper().get(
+        scraper2 = create_scrapper_session().get(
             f"https://gumroad.com/library/purchases/{purchase_id}",
             cookies = { '_gumroad_app_session': key },
             proxies=get_proxy()
@@ -96,7 +96,7 @@ def import_posts(import_id, key, offset = 1):
         soup2 = BeautifulSoup(scraper_data2, 'html.parser')
         content_url = soup2.select_one('.button.button-primary.button-block')['href']
 
-        scraper3 = cloudscraper.create_scraper().get(
+        scraper3 = create_scrapper_session().get(
             content_url,
             cookies = { '_gumroad_app_session': key },
             proxies=get_proxy()
