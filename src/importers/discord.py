@@ -16,7 +16,7 @@ from ..internals.utils.scrapper import create_scrapper_session
 from ..internals.utils.proxy import get_proxy
 from ..internals.database.database import get_conn
 from ..lib.artist import index_discord_channel_server, is_artist_dnp
-from ..lib.post import post_flagged, post_exists
+from ..lib.post import discord_post_exists
 from ..internals.utils.download import download_file, DownloaderException
 
 userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.305 Chrome/69.0.3497.128 Electron/4.0.8 Safari/537.36'
@@ -79,8 +79,8 @@ def process_channel(channel_id, server_id, import_id, key, before = None):
             file_directory = f"files/{server_id}/{post_id}"
             attachments_directory = f"attachments/{server_id}/{post_id}"     
 
-            if post_exists('discord', server_id, post_id) and not post_flagged('discord', server_id, post_id):
-                log(import_id, f'Skipping post {post_id} from server {server_id} because already exists', to_client = True)
+            if discord_post_exists(server_id, channel_id, post_id): #todo: post re-importing for discord?
+                log(import_id, f'Skipping post {post_id} from server {server_id} because it already exists', to_client = True)
                 continue
 
             log(import_id, f"Starting import: {post_id} from server {server_id}")
@@ -88,7 +88,7 @@ def process_channel(channel_id, server_id, import_id, key, before = None):
             post_model = {
                 'id': post_id,
                 'author': post['author'],
-                '"server"': server_id,
+                'server': server_id,
                 'channel': channel_id,
                 'content': post['content'],
                 'added': datetime.datetime.now(),

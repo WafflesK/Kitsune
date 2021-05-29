@@ -18,11 +18,16 @@ def delete_all_post_cache_keys():
 
 def post_exists(service, artist_id, post_id):
     cursor = get_cursor()
-    cursor.execute("SELECT * FROM posts WHERE id = %s AND \"user\" = %s AND service = %s", (post_id, artist_id, service,))
+    cursor.execute("SELECT id FROM posts WHERE id = %s AND \"user\" = %s AND service = %s", (post_id, artist_id, service,))
     return len(cursor.fetchall()) > 0
 
 def post_flagged(service, artist_id, post_id):
     cursor = get_cursor()
-    cursor.execute('SELECT * FROM booru_flags WHERE service = %s AND "user" = %s AND id = %s', (service, artist_id, post_id))
+    cursor.execute('SELECT id FROM booru_flags WHERE service = %s AND "user" = %s AND id = %s', (service, artist_id, post_id))
     existing_flags = cursor.fetchall()
     return len(existing_flags) > 0
+
+def discord_post_exists(server_id, channel_id, post_id):
+    cursor = get_cursor()
+    cursor.execute("SELECT id FROM discord_posts WHERE id = %s AND server = %s AND channel = %s", (post_id, server_id, channel_id))
+    return len(cursor.fetchall()) > 0
